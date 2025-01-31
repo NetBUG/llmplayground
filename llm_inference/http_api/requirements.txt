@@ -1,0 +1,9 @@
+boto3>=1.18.22
+fastapi==0.65.1
+pydantic==1.8.2
+pygments==2.6.1
+pytz>=2021.1
+pyyaml==5.4.1
+spacy>=3.1.0
+termcolor==1.1.0
+uvicorn==0.14.0
