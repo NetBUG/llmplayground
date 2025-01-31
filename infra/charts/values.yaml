@@ -1,0 +1,39 @@
+botexp2:
+  podLabels:
+    service: botexp2
+  imagePullSecrets:
+    - name: registrysecret
+  deployStrategy:
+    type: RollingUpdate
+  replicaCount: "1"
+  gcp:
+    hpa:
+      create: false
+    statsd: "datadogstatsd"
+  modelsReadOnly: false
+  containers:
+    command:
+      - "python3.12"
+    args: ["app.py", "--device", "cuda:0"]
+  initContainers:
+    command:
+      - "python3.12"
+    args: ["app.py", "--download-only"]
+  image:
+    repository: "registry.lan:4567/ml/ai.bot"
+    tag: 10.5.0-botexp2-xl-redeploy
+    pullPolicy: IfNotPresent
+  env:
+    AMQP_TRANSPORTERS: <path:secret/data/eva-ml/stage/ai-core/config#AMQP_TRANSPORTERS>
+    CONFIG_URL: https://stage.lan/configuration/filters
+    CONFIG_TOKEN: <path:secret/data/eva-ml/stage/ai-core/config#CONFIG_TOKEN>
+    AWS_ACCESS_KEY_ID: <path:secret/data/eva-ml/stage/ai-core/config#AWS_ACCESS_KEY_ID>
+    AWS_SECRET_ACCESS_KEY: <path:secret/data/eva-ml/stage/ai-core/config#AWS_SECRET_ACCESS_KEY>
+    STATSD_HOST: "datadogstatsd"
+    HOST_NAME: "stage-worker-4"
+    CUDA_VISIBLE_DEVICES: "0"
+  nodeSelector:
+    kubernetes.io/hostname: stage-worker-4
+  volumes:
+    modelsVolumeName: stage-worker-4-models
+    cacheVolumeName: stage-worker-4-cache

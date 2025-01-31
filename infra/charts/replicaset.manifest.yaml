@@ -90,9 +90,10 @@ spec:
         - name: registrysecret
       initContainers:
         - args:
-            - '1'
+            - 'instance/app.py'
+            - '--download-only'
           command:
-            - sleep
+            - python3.12
           env:
             - name: AMQP_TRANSPORTER
               value: amqp://$(AMQP_USER):$(AMQP_PASS)@$(AMQP_HOST):$(AMQP_PORT)/$(AMQP_VHOST)
