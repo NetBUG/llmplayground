@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: bot-exp2-xl.default.services.eva-ml-stage:apps/Deployment:default/bot-exp2-xl
+    deployment.kubernetes.io/desired-replicas: '1'
+    deployment.kubernetes.io/max-replicas: '2'
+    deployment.kubernetes.io/revision: '1'
+  creationTimestamp: '2025-01-22T10:44:31Z'
+  generation: 2
+  labels:
+    app.kubernetes.io/instance: bot-exp2-xl
+    app.kubernetes.io/name: bot-exp2
+    pod-template-hash: 9b949956b
+    service: bot-exp2
+  name: bot-exp2-xl-9b949956b
+  namespace: default
+  ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Deployment
+      name: bot-exp2-xl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: bot-exp2-xl
+      app.kubernetes.io/name: bot-exp2
+      pod-template-hash: 9b949956b
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: bot-exp2-xl
+        app.kubernetes.io/name: bot-exp2
+        pod-template-hash: 9b949956b
+        service: bot-exp2
+    spec:
+      containers:
+        - args:
+            - instance/app.py
+            - '--device'
+            - cuda:0
+          command:
+            - python3.12
+          env:
+            - name: AMQP_TRANSPORTER
+              value: amqp://$(AMQP_USER):$(AMQP_PASS)@$(AMQP_HOST):$(AMQP_PORT)/$(AMQP_VHOST)
+            - name: STATSD_HOST
+              value: 192.168.250.32
+            - name: IMAGENAME
+              value: 10.5.0-bot-exp2-xl-redeploy
+            - name: INSTANCE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: HOST_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: IP_ADDRESS
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+          envFrom:
+            - secretRef:
+                name: bot-exp2-xl
+          image: registry.lan:4567/ml/ai.bot:10.5.0-bot-exp2-xl-redeploy
+          imagePullPolicy: IfNotPresent
+          name: bot-exp2
+          ports:
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /app/models/
+              name: bot-exp2-xl-models-vol
+            - mountPath: /app/cache/
+              name: bot-exp2-xl-cache-vol
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: registrysecret
+      initContainers:
+        - args:
+            - '1'
+          command:
+            - sleep
+          env:
+            - name: AMQP_TRANSPORTER
+              value: amqp://$(AMQP_USER):$(AMQP_PASS)@$(AMQP_HOST):$(AMQP_PORT)/$(AMQP_VHOST)
+          envFrom:
+            - secretRef:
+                name: bot-exp2-xl
+          image: registry.lan:4567/ml/ai.bot:10.5.0-bot-exp2-xl-redeploy
+          imagePullPolicy: IfNotPresent
+          name: init
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /app/models/
+              name: bot-exp2-xl-models-vol
+            - mountPath: /app/cache/
+              name: bot-exp2-xl-cache-vol
+      nodeSelector:
+        kubernetes.io/hostname: eva-stage-worker-4
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: bot-exp2-xl
+      serviceAccountName: bot-exp2-xl
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: bot-exp2-xl-cache-vol
+          persistentVolumeClaim:
+            claimName: eva-stage-worker-4-models
+        - name: bot-exp2-xl-models-vol
+          persistentVolumeClaim:
+            claimName: eva-stage-worker-4-cache
