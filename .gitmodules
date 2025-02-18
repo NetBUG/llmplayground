@@ -1,0 +1,3 @@
+[submodule "llm_inference/llminference"]
+	path = llm_inference/http_api_inference
+	url = git@github.com:NetBUG/llminference.git
